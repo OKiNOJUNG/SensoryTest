@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blend Signature Sensory Test</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless/borderless.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --gold-primary: #D4AF37;       
+            --gold-dark: #8a6d3b;          
+            --gold-light: #FFF8E1;         
+            --glass-bg: rgba(255, 255, 255, 0.90);
+            --glass-border: rgba(255, 255, 255, 0.8);
+            --shadow: 0 15px 35px rgba(212, 175, 55, 0.15);
+            --error-color: #ff4d4d;
+            --error-bg: #fff0f0;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Prompt', sans-serif;
+            color: #333;
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #f4f4f4;
+        }
+
+        .bg-fixed {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('BlendSig.jpg') no-repeat center center/cover;
+            z-index: -2;
+            transform: scale(1.05);
+        }
+        
+        .bg-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, 
+                rgba(255, 252, 240, 0.95) 0%, 
+                rgba(255, 248, 225, 0.8) 50%, 
+                rgba(212, 175, 55, 0.2) 100%);
+            backdrop-filter: blur(2px);
+            z-index: -1;
+        }
+
+        /* Container หลัก */
+        .container { 
+            width: 100%; 
+            max-width: 900px; 
+            padding: 20px; 
+            z-index: 10; 
+            padding-bottom: 50px; 
+        }
+
+        .glass-card {
+            background: var(--glass-bg); 
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px; 
+            padding: 40px 30px; /* Desktop Padding */
+            box-shadow: var(--shadow); 
+            border: 1px solid var(--glass-border);
+            position: relative; overflow: visible; 
+            margin-bottom: 25px;
+            transition: all 0.4s ease;
+            width: 100%;
+        }
+
+        .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+
+        .logo-text {
+            font-size: 2.5rem; font-weight: 700; text-align: center;
+            text-transform: uppercase; letter-spacing: 2px; margin-bottom: 5px;
+            background: linear-gradient(45deg, #8a6d3b 0%, #D4AF37 25%, #FDB931 50%, #D4AF37 75%, #8a6d3b 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            animation: shine 4s linear infinite;
+        }
+        @keyframes shine { to { background-position: 200% center; } }
+
+        .sub-logo { text-align: center; color: #666; font-size: 0.95rem; margin-bottom: 35px; font-weight: 300; }
+
+        .passcode-input {
+            display: block; width: 220px; margin: 0 auto 25px; padding: 15px; font-size: 1.8rem;
+            text-align: center; letter-spacing: 8px; border: 2px solid rgba(212, 175, 55, 0.3); 
+            border-radius: 50px; outline: none; color: var(--gold-dark); 
+            background: rgba(255,255,255,0.9); transition: 0.3s;
+            font-family: 'Prompt', sans-serif;
+        }
+        .passcode-input:focus { border-color: var(--gold-primary); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); transform: scale(1.05); }
+
+        .form-header { font-size: 1.15rem; font-weight: 600; color: var(--gold-dark); margin-bottom: 15px; display: flex; align-items: center; }
+        .q-badge { background: linear-gradient(135deg, #D4AF37, #B8860B); color: #fff; padding: 3px 10px; border-radius: 8px; margin-right: 12px; font-size: 0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); flex-shrink: 0; }
+        .form-group { margin-bottom: 35px; padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.8); transition: 0.3s; }
+        
+        .error-highlight { border: 2px solid var(--error-color); background-color: var(--error-bg); animation: shake 0.5s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+
+        select, input[type="text"], textarea {
+            width: 100%; padding: 14px 15px; border: 1px solid #ddd; border-radius: 12px;
+            font-family: 'Prompt', sans-serif; font-size: 1rem; background: #fff; color: #333; transition: 0.2s;
+        }
+        select:focus, input:focus, textarea:focus { border-color: var(--gold-primary); outline: none; box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); }
+
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+        .option-item {
+            display: flex; align-items: center; padding: 12px 18px; background: #fff;
+            border: 1px solid #eee; border-radius: 12px; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .option-item:hover { background: var(--gold-light); border-color: var(--gold-primary); transform: translateY(-2px); }
+        .option-item input { margin-right: 15px; accent-color: var(--gold-dark); transform: scale(1.2); flex-shrink: 0; }
+
+        .option-item-other {
+            grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+            padding: 12px 18px; background: #fff; border: 1px solid #eee; border-radius: 12px; cursor: pointer;
+        }
+        .option-item-other:hover { background: var(--gold-light); border-color: var(--gold-primary); }
+        .other-label-wrap { display: flex; align-items: center; min-width: 140px; }
+        .other-input-field { flex: 1; min-width: 200px; }
+
+        /* Q6 Mobile Layout */
+        .q6-mobile-container { display: flex; flex-direction: column; gap: 20px; }
+        .q6-row-card { background: #fff; border-radius: 15px; padding: 15px; border: 1px solid #eee; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .q6-header { font-weight: 600; color: var(--gold-dark); margin-bottom: 12px; text-align: center; border-bottom: 1px dashed #ddd; padding-bottom: 8px; }
+        .q6-options { display: flex; justify-content: space-between; gap: 8px; }
+        .q6-btn-label { flex: 1; cursor: pointer; position: relative; }
+        .q6-btn-label input { position: absolute; opacity: 0; cursor: pointer; }
+        .q6-btn-box {
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 15px 5px; border: 1px solid #ddd; border-radius: 10px;
+            background: #fafafa; transition: all 0.2s; height: 100%;
+        }
+        .q6-btn-num { font-size: 1.1rem; font-weight: 600; color: #555; }
+        .q6-btn-label input:checked + .q6-btn-box {
+            background: var(--gold-primary); border-color: var(--gold-primary);
+            color: #fff; box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4); transform: translateY(-2px);
+        }
+        .q6-btn-label input:checked + .q6-btn-box .q6-btn-num { color: #fff; }
+
+        .btn-gold {
+            width: 100%; padding: 16px; 
+            background: linear-gradient(135deg, #D4AF37 0%, #B8860B 100%);
+            color: white; border: none; border-radius: 50px; 
+            font-size: 1.1rem; font-weight: 600; font-family: 'Prompt', sans-serif;
+            cursor: pointer; box-shadow: 0 8px 20px rgba(184, 134, 11, 0.25); 
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .btn-gold::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: 0.5s;
+        }
+        .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(184, 134, 11, 0.35); }
+        .btn-gold:hover::after { left: 100%; }
+
+        /* Dashboard Styles */
+        .header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px; }
+        .btn-share {
+            background: #fff; color: var(--gold-dark); border: 2px solid var(--gold-primary);
+            padding: 10px 25px; border-radius: 30px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 8px; font-size: 0.95rem; transition: 0.2s; font-family: 'Prompt', sans-serif;
+        }
+        .btn-share:hover { background: var(--gold-primary); color: #fff; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-card { background: rgba(255,255,255,0.9); padding: 25px; text-align: center; border-radius: 20px; border: 1px solid #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .stat-val { font-size: 2.2rem; font-weight: 700; color: var(--gold-primary); line-height: 1.2; }
+        .stat-lbl { font-size: 0.9rem; color: #777; font-weight: 500; }
+        
+        .chart-box { 
+            background: #fff; padding: 25px; border-radius: 20px; margin-bottom: 25px; 
+            border: 1px solid #eee; break-inside: avoid; box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+            display: flex; flex-direction: column; align-items: center; width: 100%;
+        }
+        .chart-title { 
+            font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; color: #444; 
+            border-left: 5px solid var(--gold-primary); padding-left: 15px; 
+            align-self: flex-start; width: 100%;
+        }
+        .chart-highlight { color: var(--gold-dark); font-size: 0.9rem; font-weight: 400; margin-left: 5px; }
+
+        /* Canvas Wrapper */
+        .chart-wrapper { width: 100%; position: relative; margin: 0 auto; display: flex; justify-content: center; }
+        canvas { width: 100% !important; max-width: 100%; }
+
+        .top-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .top-table th { text-align: left; color: #999; font-size: 0.85rem; padding: 8px; border-bottom: 1px solid #eee; font-weight: 400; }
+        .top-table td { padding: 12px 8px; border-bottom: 1px solid #f9f9f9; font-size: 1rem; }
+        .rank-num { font-weight: bold; color: var(--gold-dark); width: 30px; display:inline-block; }
+        .progress-bg { background: #f0f0f0; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 6px; width: 100%; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #D4AF37, #FDB931); border-radius: 4px; }
+        
+        #activeFilters { margin-bottom: 15px; display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-badge { background: var(--gold-primary); color: white; padding: 6px 15px; border-radius: 20px; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- RESPONSIVE ADJUSTMENTS --- */
+        @media screen and (min-width: 768px) {
+            .options-grid { grid-template-columns: repeat(2, 1fr); }
+            .dashboard-flex { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; } 
+            .dashboard-flex > .chart-box { flex: 1; min-width: 300px; }
+        }
+
+        @media screen and (max-width: 767px) {
+            .container { padding-left: 15px; padding-right: 15px; max-width: 100vw; overflow-x: hidden; }
+            .glass-card { padding: 25px 20px; }
+            .logo-text { font-size: 1.8rem; }
+            .form-header { font-size: 1rem; }
+            .other-label-wrap { min-width: auto; margin-bottom: 8px; }
+            .other-input-field { min-width: 100%; }
+            .stat-grid { grid-template-columns: 1fr; gap: 15px; } 
+            .chart-box { padding: 15px; } 
+            .chart-wrapper { height: auto !important; min-height: 250px; } 
+        }
+
+        .float-anim { animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0% { transform: translatey(0px); } 50% { transform: translatey(-15px); } 100% { transform: translatey(0px); } }
+
+    </style>
+</head>
+<body>
+
+    <div class="bg-fixed"></div>
+    <div class="bg-overlay"></div>
+
+    <div class="container" id="mainContainer">
+        
+        <div id="loginSection" class="glass-card float-anim" style="margin-top: 10vh; max-width: 500px; margin-left: auto; margin-right: auto;">
+            <div class="logo-text">BLEND285 SIGNATURE</div>
+            <p class="sub-logo">ระบบบันทึกผลการทดสอบสุรา (Sensory Test)</p>
+            
+            <input type="tel" id="passcode" class="passcode-input" placeholder="••••" maxlength="4">
+            <button class="btn-gold" onclick="checkLogin()">เข้าสู่ระบบ</button>
+        </div>
+
+        <form id="surveyForm" class="glass-card hidden">
+            <h2 style="text-align:center; color:#B8860B; margin-bottom:30px; font-weight:700;">แบบสอบถาม</h2>
+            
+            <div class="form-group" id="grp_q1">
+                <div class="form-header"><span class="q-badge">1</span> สถานที่ทดสอบ <span style="color:red">*</span></div>
+                <div class="options-grid">
+                    <label class="option-item"><input type="radio" name="q1" value="อาคารแสงโสม พหลโยธิน"> อาคารแสงโสม พหลโยธิน</label>
+                    <label class="option-item"><input type="radio" name="q1" value="โรงงาน สุรากระทิงแดง (1988) จำกัด"> โรงงาน สุรากระทิงแดง (1988) จำกัด</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="grp_q2">
+                <div class="form-header"><span class="q-badge">2</span> เพศ <span style="color:red">*</span></div>
+                <div class="options-grid" style="grid-template-columns: 1fr 1fr;">
+                    <label class="option-item"><input type="radio" name="q2" value="ชาย"> ชาย</label>
+                    <label class="option-item"><input type="radio" name="q2" value="หญิง"> หญิง</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="grp_q3">
+                <div class="form-header"><span class="q-badge">3</span> ช่วงอายุ <span style="color:red">*</span></div>
+                <select id="q3">
+                    <option value="" disabled selected>กรุณาเลือก...</option>
+                    <option value="23-29">23-29 ปี</option>
+                    <option value="30-37">30-37 ปี</option>
+                    <option value="38-45">38-45 ปี</option>
+                    <option value="มากกว่า 45">มากกว่า 45 ปี</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="grp_q4">
+                <div class="form-header"><span class="q-badge">4</span> เครื่องดื่มที่นิยม (เลือกได้มากกว่า 1) <span style="color:red">*</span></div>
+                <div class="options-grid">
+                    <label class="option-item"><input type="checkbox" name="q4" value="Black Label"> Black Label</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="Red Label"> Red Label</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="BLEND285"> BLEND285</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="หงส์ทอง"> หงส์ทอง</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="แสงโสม"> แสงโสม</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="สุราขาว"> สุราขาว</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="เบียร์"> เบียร์</label>
+                    <label class="option-item"><input type="checkbox" name="q4" value="RTD"> RTD</label>
+                    
+                    <div class="option-item-other">
+                        <div class="other-label-wrap">
+                            <input type="checkbox" name="q4" id="q4_other_chk" value="อื่นๆ" style="margin-right:15px; accent-color:#8a6d3b; transform:scale(1.2);"> 
+                            <span style="cursor:pointer;" onclick="document.getElementById('q4_other_chk').click()">อื่นๆ (โปรดระบุ) :</span>
+                        </div>
+                        <input type="text" id="q4_other_txt" class="other-input-field" disabled placeholder="ระบุยี่ห้อ...">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="grp_q5">
+                <div class="form-header"><span class="q-badge">5</span> ความถี่ในการดื่ม <span style="color:red">*</span></div>
+                <select id="q5">
+                    <option value="" disabled selected>กรุณาเลือก...</option>
+                    <option value="ทุกวัน">ทุกวัน</option>
+                    <option value="2-4วัน/ครั้ง">2-4วัน/ครั้ง</option>
+                    <option value="สัปดาห์/ครั้ง">สัปดาห์/ครั้ง</option>
+                    <option value="นานๆ/ครั้ง">นานๆ/ครั้ง</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="grp_q6">
+                <div class="form-header" style="align-items:flex-start;">
+                    <span class="q-badge">6</span> 
+                    <div>
+                        ท่านชอบสุราตัวอย่างหมายเลขใด <span style="color:red">*</span>
+                        <div style="font-size:0.8rem; color:#888; margin-top:5px; font-weight:400;">(กรุณาเลือกให้ครบทุกข้อ และห้ามเลือกเบอร์ซ้ำในแต่ละหัวข้อ)</div>
+                    </div>
+                </div>
+                
+                <div class="q6-mobile-container">
+                    <div class="q6-row-card">
+                        <div class="q6-header">🥇 ชอบมากที่สุด</div>
+                        <div class="q6-options">
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                        </div>
+                    </div>
+                    <div class="q6-row-card">
+                        <div class="q6-header">🥈 ชอบปานกลาง</div>
+                        <div class="q6-options">
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                        </div>
+                    </div>
+                    <div class="q6-row-card">
+                        <div class="q6-header">🥉 ชอบน้อยที่สุด</div>
+                        <div class="q6-options">
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group" id="grp_q7">
+                <div class="form-header"><span class="q-badge">7</span> ความใกล้เคียงของรสชาติ <span style="color:red">*</span></div>
+                <select id="q7">
+                    <option value="" disabled selected>กรุณาเลือก...</option>
+                    <option value="556-568">556-568</option>
+                    <option value="556-579">556-579</option>
+                    <option value="568-579">568-579</option>
+                    <option value="ใกล้เคียงกันทั้งหมด">ใกล้เคียงกันทั้งหมด</option>
+                </select>
+            </div>
+            
+            <div class="form-group" id="grp_q8">
+                <div class="form-header"><span class="q-badge">8</span> ข้อเสนอแนะ (ถ้ามี)</div>
+                <textarea id="q8" rows="3" placeholder="ระบุ..."></textarea>
+            </div>
+            
+            <button type="button" class="btn-gold" onclick="submitForm()">ยืนยันส่งคำตอบ</button>
+        </form>
+
+        <div id="dashboardSection" class="glass-card hidden" style="max-width: 1000px; margin: 0 auto;">
+            <div class="header-row">
+                <div>
+                    <h2 style="color:#B8860B; margin:0; font-size:1.8rem;">สรุปผลการทดสอบ</h2>
+                    <p style="color:#888; font-size:0.9rem;">Real-time Data Dashboard</p>
+                </div>
+                <button class="btn-share" onclick="exportImage()">
+                    📥 Download Report
+                </button>
+            </div>
+            
+            <div id="activeFilters"></div>
+
+            <div id="pdfContent" style="background: white; padding: 30px; border-radius: 20px;">
+                <div class="stat-grid reveal">
+                    <div class="stat-card">
+                        <div class="stat-val" id="totalCount">0</div>
+                        <div class="stat-lbl">ผู้ตอบแบบสอบถาม (คน)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-val" id="blendDrinkerCount">0</div>
+                        <div class="stat-lbl">ผู้ดื่ม BLEND285 (คน)</div>
+                    </div>
+                </div>
+
+                <div class="chart-box reveal">
+                    <div class="chart-title">1. สถานที่ทดสอบ <small style="color:#999; font-weight:normal;">(คลิกเพื่อกรอง)</small></div>
+                    <div class="chart-wrapper" style="height:300px;"><canvas id="chartQ1"></canvas></div>
+                </div>
+                
+                <div class="dashboard-flex reveal">
+                    <div class="chart-box">
+                        <div class="chart-title">2. เพศ <small style="color:#999; font-weight:normal;">(คลิกเพื่อกรอง)</small></div>
+                        <div class="chart-wrapper" style="height:300px;"><canvas id="chartQ2"></canvas></div>
+                    </div>
+                    <div class="chart-box">
+                        <div class="chart-title">3. ช่วงอายุ <small style="color:#999; font-weight:normal;">(คลิกเพื่อกรอง)</small></div>
+                        <div class="chart-wrapper" style="height:300px;"><canvas id="chartQ3"></canvas></div>
+                    </div>
+                </div>
+
+                <div class="chart-box reveal">
+                    <div class="chart-title">4. สินค้ายอดนิยม (Top 5) <span class="chart-highlight">จำนวน (คน) | %</span></div>
+                    <table class="top-table">
+                        <thead><tr><th>อันดับ</th><th>สินค้า</th><th style="text-align:right;">คน (%)</th></tr></thead>
+                        <tbody id="topProductTable"></tbody>
+                    </table>
+                </div>
+
+                <div class="chart-box reveal">
+                    <div class="chart-title">5. ความถี่ในการดื่ม <small style="color:#999; font-weight:normal;">(คลิกเพื่อกรอง)</small></div>
+                    <div class="chart-wrapper" style="height:300px;"><canvas id="chartQ5"></canvas></div>
+                </div>
+
+                <div class="chart-box reveal">
+                    <div class="chart-title">6. ผลทดสอบ (ภาพรวม) <small style="color:#999; font-weight:normal;">(คลิกแท่งกราฟเพื่อกรอง)</small></div>
+                    <div class="chart-wrapper" style="height:400px;"><canvas id="chartQ6"></canvas></div>
+                </div>
+
+                <div class="chart-box reveal" style="border: 2px solid var(--gold-primary); background: #fffcf0;">
+                    <div class="chart-title">6. ผลทดสอบ (เฉพาะกลุ่ม BLEND285) <span class="chart-highlight">Cross-Filter</span></div>
+                    <div class="chart-wrapper" style="height:400px;"><canvas id="chartQ6_Filtered"></canvas></div>
+                </div>
+
+                <div class="chart-box reveal">
+                    <div class="chart-title">7. ความใกล้เคียงรสชาติ <small style="color:#999; font-weight:normal;">(คลิกเพื่อกรอง)</small></div>
+                    <div class="chart-wrapper" style="height:300px;"><canvas id="chartQ7"></canvas></div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px; color: #aaa; font-size: 0.8rem; display:flex; justify-content:center; align-items:center; gap:10px;">
+                    <img src="https://cdn-icons-png.flaticon.com/512/60/60995.png" width="20" style="opacity:0.3;">
+                    คลิกที่กราฟเพื่อ Filter ข้อมูล (คลิกซ้ำเพื่อยกเลิก)
+                </div>
+            </div>
+            
+            <button class="btn-gold" style="background:#999; margin-top:30px; box-shadow:none;" onclick="location.reload()">ออกจากระบบ</button>
+        </div>
+
+    </div>
+
+    <script>
+        const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd9sily5JtIV4D0zU61Xn4N8vUXjAlPqbXFrvUmUko9trbHqg/formResponse';
+        const RAW_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSUuuyrXLfw5tA6k6EDMZTmkOJNlkyidTcegYlqz9zJ2Ct-xyqu75C_95ZNW9kuyOeZwkWd1542OaYa/pub?output=csv';
+        const PROXY_URL = 'https://corsproxy.io/?' + encodeURIComponent(RAW_CSV_URL);
+
+        const IDS = {
+            q1: 'entry.1743958477', q2: 'entry.342673359', q3: 'entry.1627963833',
+            q4: 'entry.2035678904', q5: 'entry.1709576663',
+            q6_r1: 'entry.1950347927', q6_r2: 'entry.790139523', q6_r3: 'entry.676332397',
+            q7: 'entry.1755706510', q8: 'entry.1172713666'
+        };
+
+        let rawDashboardData = [];
+        let activeFilters = {}; 
+        let chartInstances = {};
+
+        Chart.register(ChartDataLabels);
+        Chart.defaults.font.family = "'Prompt', sans-serif";
+        Chart.defaults.set('plugins.datalabels', {
+            color: '#333', anchor: 'end', align: 'top', font: { weight: 'bold', size: 11, family: 'Prompt' },
+            formatter: (value, ctx) => {
+                if (ctx.chart.config.type === 'bar') return value;
+                let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                let percentage = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
+                return value + '\n(' + percentage + ')';
+            }
+        });
+
+        function checkLogin() {
+            const code = document.getElementById('passcode').value;
+            const lastSub = localStorage.getItem('submission_timestamp');
+            
+            if (lastSub && code !== '2222') {
+                const elapsed = Date.now() - parseInt(lastSub);
+                if (elapsed / (1000 * 60 * 60) < 2) {
+                    Swal.fire({ icon: 'info', title: 'ส่งคำตอบแล้ว', text: 'ระบบตรวจสอบได้ว่าท่านยืนยันการส่งคำตอบไปแล้ว', confirmButtonColor: '#D4AF37' });
+                    return;
+                }
+            }
+
+            if(code === '0901') {
+                switchSection('surveyForm');
+            } else if(code === '2222') {
+                switchSection('dashboardSection');
+                loadDashboardData();
+            } else {
+                Swal.fire('รหัสผ่านผิด', 'กรุณาลองใหม่', 'error');
+            }
+        }
+
+        function switchSection(id) {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById(id).classList.remove('hidden');
+            document.getElementById(id).classList.add('fade-in');
+            setTimeout(setupScrollReveal, 500);
+        }
+
+        document.getElementById('q4_other_chk').addEventListener('change', function() { 
+            const txtBox = document.getElementById('q4_other_txt');
+            txtBox.disabled = !this.checked; 
+            if(!this.checked) txtBox.value = '';
+            else txtBox.focus();
+        });
+
+        function checkGrid(radio) {
+            const val = radio.value; const name = radio.name;
+            ['q6_r1', 'q6_r2', 'q6_r3'].forEach(r => { 
+                if(r !== name) { 
+                    const c = document.querySelector(`input[name="${r}"][value="${val}"]`); 
+                    if(c && c.checked) c.checked = false; 
+                }
+            });
+        }
+
+        function submitForm() {
+            document.querySelectorAll('.error-highlight').forEach(el => el.classList.remove('error-highlight'));
+
+            let missing = [];
+            let firstMissingEl = null;
+
+            if(!document.querySelector('input[name="q1"]:checked')) { missing.push('1. สถานที่'); highlight('grp_q1'); if(!firstMissingEl) firstMissingEl='grp_q1'; }
+            if(!document.querySelector('input[name="q2"]:checked')) { missing.push('2. เพศ'); highlight('grp_q2'); if(!firstMissingEl) firstMissingEl='grp_q2'; }
+            if(!document.getElementById('q3').value) { missing.push('3. อายุ'); highlight('grp_q3'); if(!firstMissingEl) firstMissingEl='grp_q3'; }
+
+            const q4Checked = document.querySelectorAll('input[name="q4"]:checked');
+            let hasValidQ4 = false;
+            q4Checked.forEach(el => { if (el.value !== 'อื่นๆ') hasValidQ4 = true; });
+            
+            if(q4Checked.length === 0) {
+                missing.push('4. เครื่องดื่ม'); highlight('grp_q4'); if(!firstMissingEl) firstMissingEl='grp_q4';
+            } else if (!hasValidQ4 && q4Checked.length > 0) {
+                Swal.fire({ icon: 'warning', title: 'กรุณาเลือกยี่ห้อเพิ่มเติม', text: 'เลือกเครื่องดื่มหลักอย่างน้อย 1 รายการ', confirmButtonColor: '#D4AF37' });
+                return;
+            }
+
+            if(!document.getElementById('q5').value) { missing.push('5. ความถี่'); highlight('grp_q5'); if(!firstMissingEl) firstMissingEl='grp_q5'; }
+
+            const r1 = document.querySelector('input[name="q6_r1"]:checked');
+            const r2 = document.querySelector('input[name="q6_r2"]:checked');
+            const r3 = document.querySelector('input[name="q6_r3"]:checked');
+            if(!r1 || !r2 || !r3) { missing.push('6. ผลทดสอบ (เลือกให้ครบ)'); highlight('grp_q6'); if(!firstMissingEl) firstMissingEl='grp_q6'; }
+
+            if(!document.getElementById('q7').value) { missing.push('7. ความใกล้เคียง'); highlight('grp_q7'); if(!firstMissingEl) firstMissingEl='grp_q7'; }
+
+            if(missing.length > 0) {
+                Swal.fire({ icon: 'warning', title: 'ข้อมูลไม่ครบ', html: missing.join('<br>'), confirmButtonColor: '#D4AF37' })
+                .then(() => { if(firstMissingEl) document.getElementById(firstMissingEl).scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+                return;
+            }
+
+            Swal.fire({ 
+                title: 'ยืนยันส่งคำตอบ?', text: "ไม่สามารถแก้ไขได้อีก", icon: 'question', 
+                showCancelButton: true, confirmButtonColor: '#D4AF37', confirmButtonText: 'ยืนยัน' 
+            }).then((res) => {
+                if(res.isConfirmed) {
+                    const fd = new FormData();
+                    fd.append(IDS.q1, document.querySelector('input[name="q1"]:checked').value); 
+                    fd.append(IDS.q2, document.querySelector('input[name="q2"]:checked').value); 
+                    fd.append(IDS.q3, document.getElementById('q3').value);
+                    
+                    let otherTextVal = '';
+                    q4Checked.forEach(e => {
+                        if(e.value === 'อื่นๆ') { otherTextVal = document.getElementById('q4_other_txt').value.trim(); } 
+                        else { fd.append(IDS.q4, e.value); }
+                    });
+
+                    fd.append(IDS.q5, document.getElementById('q5').value); 
+                    fd.append(IDS.q6_r1, r1.value); 
+                    fd.append(IDS.q6_r2, r2.value); 
+                    fd.append(IDS.q6_r3, r3.value); 
+                    fd.append(IDS.q7, document.getElementById('q7').value); 
+                    
+                    let finalQ8 = document.getElementById('q8').value;
+                    if(otherTextVal) finalQ8 += (finalQ8 ? '\n' : '') + '[เครื่องดื่มอื่นๆ: ' + otherTextVal + ']';
+                    fd.append(IDS.q8, finalQ8);
+                    fd.append('pageHistory', '0'); 
+
+                    Swal.fire({ title: 'กำลังบันทึก...', didOpen:()=>{Swal.showLoading()} });
+                    
+                    fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: fd })
+                    .then(() => {
+                        localStorage.setItem('submission_timestamp', Date.now().toString());
+                        Swal.fire('สำเร็จ', 'ขอบคุณที่ร่วมทดสอบ', 'success').then(() => location.reload());
+                    })
+                    .catch((err) => { Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error'); });
+                }
+            });
+        }
+
+        function highlight(id) { document.getElementById(id).classList.add('error-highlight'); }
+
+        function loadDashboardData() {
+            Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>{Swal.showLoading()}});
+            Papa.parse(PROXY_URL + '&t=' + new Date().getTime(), {
+                download: true, header: true, skipEmptyLines: true,
+                complete: function(results) {
+                    Swal.close();
+                    if(!results.data || results.data.length === 0) { Swal.fire('Info', 'ไม่พบข้อมูล', 'info'); return; }
+                    rawDashboardData = results.data; 
+                    updateDashboardState(); 
+                },
+                error: err => Swal.fire('Error', 'ดึงข้อมูลไม่ได้ (CORS)', 'error')
+            });
+        }
+
+        function updateDashboardState() {
+            const filteredData = rawDashboardData.filter(row => {
+                for (const key in activeFilters) {
+                    const filterVal = activeFilters[key];
+                    if (!filterVal) continue;
+                    const rowVal = Object.values(row).find(v => v && v.includes(filterVal));
+                    if (!rowVal) return false;
+                }
+                return true;
+            });
+
+            let counts = { total: filteredData.length, blendDrinker: 0, q1: {}, q2: {}, q3: {}, q4_items: {}, q5: {}, q7: {}, q6: {'556':[0,0,0],'568':[0,0,0],'579':[0,0,0]}, q6_filtered: {'556':[0,0,0],'568':[0,0,0],'579':[0,0,0]} };
+
+            filteredData.forEach(row => {
+                let isBlend285 = false;
+                for(let key in row) {
+                    let val = row[key]; if(!val) continue; val = val.trim();
+                    if(key.includes('สถานที่')) count(counts.q1, val);
+                    else if(key.includes('เพศ')) count(counts.q2, val);
+                    else if(key.includes('ช่วงอายุ') || key.includes('อายุ')) count(counts.q3, val);
+                    else if(key.includes('นิยมดื่ม') || key.includes('เครื่องดื่ม')) { 
+                        val.split(',').forEach(s => { s=s.trim(); count(counts.q4_items, s); if(s.includes('BLEND285')) isBlend285=true; }); 
+                    }
+                    else if(key.includes('ความถี่')) count(counts.q5, val);
+                    else if(key.includes('ใกล้เคียง')) count(counts.q7, val);
+                    if(key.includes('ชอบมากที่สุด')) updateQ6(counts,val,0,isBlend285);
+                    else if(key.includes('ชอบปานกลาง')) updateQ6(counts,val,1,isBlend285);
+                    else if(key.includes('ชอบน้อยที่สุด')) updateQ6(counts,val,2,isBlend285);
+                }
+                if(isBlend285) counts.blendDrinker++;
+            });
+
+            document.getElementById('totalCount').innerText = counts.total;
+            document.getElementById('blendDrinkerCount').innerText = counts.blendDrinker;
+            updateFilterBadges();
+
+            updateChart('chartQ1', 'pie', counts.q1, 'q1');
+            updateChart('chartQ2', 'doughnut', counts.q2, 'q2');
+            updateChart('chartQ3', 'bar', counts.q3, 'q3');
+            updateChart('chartQ5', 'bar', counts.q5, 'q5');
+            updateChart('chartQ7', 'pie', counts.q7, 'q7');
+            updateGroupedBar('chartQ6', counts.q6);
+            updateGroupedBar('chartQ6_Filtered', counts.q6_filtered);
+            renderTop5List(counts.q4_items, counts.total);
+        }
+
+        function count(obj, k) { if(k) obj[k]=(obj[k]||0)+1; }
+        function updateQ6(c,v,i,f) { if(c.q6[v]) c.q6[v][i]++; if(f && c.q6_filtered[v]) c.q6_filtered[v][i]++; }
+        
+        function updateFilterBadges() {
+            const container = document.getElementById('activeFilters'); container.innerHTML = '';
+            Object.keys(activeFilters).forEach(key => {
+                if(activeFilters[key]) container.innerHTML += `<div class="filter-badge" onclick="toggleFilter('${key}', null)"><span>${activeFilters[key]}</span> ×</div>`;
+            });
+        }
+        function toggleFilter(filterKey, value) {
+            activeFilters[filterKey] = activeFilters[filterKey] === value ? null : value;
+            updateDashboardState();
+        }
+
+        function createGoldGradient(ctx, type) {
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            if(type === 'warm') { gradient.addColorStop(0, '#FDB931'); gradient.addColorStop(1, '#D4AF37'); } 
+            else if(type === 'light') { gradient.addColorStop(0, '#FFFFAC'); gradient.addColorStop(1, '#F0E68C'); } 
+            else if(type === 'dark') { gradient.addColorStop(0, '#BF953F'); gradient.addColorStop(1, '#8a6d3b'); } 
+            return gradient;
+        }
+
+        function updateChart(id, type, dataObj, filterKey) {
+            const labels = Object.keys(dataObj); const data = Object.values(dataObj);
+            
+            const scalesConfig = type === 'bar' ? { 
+                y: { 
+                    beginAtZero: true, 
+                    grace: '10%', 
+                    ticks: { stepSize: 1, precision: 0 } 
+                } 
+            } : {};
+
+            const legendConfig = type === 'bar' ? { display: false } : { display: true, position: 'bottom', labels: { padding: 20, font: {family:'Prompt'} } };
+
+            if (chartInstances[id]) {
+                chartInstances[id].data.labels = labels; chartInstances[id].data.datasets[0].data = data; chartInstances[id].update();
+            } else {
+                const ctx = document.getElementById(id).getContext('2d');
+                chartInstances[id] = new Chart(ctx, {
+                    type: type, 
+                    data: { labels: labels, datasets: [{ label: 'จำนวน', data: data, backgroundColor: ['#D4AF37','#B8860B','#F5DEB3','#8a6d3b','#c0c0c0'], borderWidth:1 }] },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: scalesConfig, 
+                        plugins: { 
+                            legend: legendConfig, 
+                            datalabels: { 
+                                color: type==='bar'?'#333':'#333', 
+                                anchor: type==='bar'?'end':'center', 
+                                align: type==='bar'?'top':'center',
+                                offset: type==='bar'? 4 : 0
+                            } 
+                        },
+                        onClick: (e, elements, chart) => { if(elements[0]) toggleFilter(filterKey, chart.data.labels[elements[0].index]); }
+                    }
+                });
+            }
+        }
+
+        function updateGroupedBar(id, dataObj) {
+            const ctx = document.getElementById(id).getContext('2d');
+            const grad1 = createGoldGradient(ctx,'warm'); const grad2 = createGoldGradient(ctx,'light'); const grad3 = createGoldGradient(ctx,'dark');
+            const datasets = [
+                { label: '556 (ทองอุ่น)', data: dataObj['556'], backgroundColor: grad1, stack: 'stack0' },
+                { label: '568 (ทองสว่าง)', data: dataObj['568'], backgroundColor: grad2, stack: 'stack1' },
+                { label: '579 (ทองเข้ม)', data: dataObj['579'], backgroundColor: grad3, stack: 'stack2' }
+            ];
+
+            if (chartInstances[id]) {
+                chartInstances[id].data.datasets = datasets; chartInstances[id].update();
+            } else {
+                chartInstances[id] = new Chart(ctx, {
+                    type: 'bar', data: { labels: ['ชอบมากที่สุด', 'ชอบปานกลาง', 'ชอบน้อยที่สุด'], datasets: datasets },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                grace: '10%',
+                                ticks: { stepSize: 1, precision: 0 } 
+                            } 
+                        }, 
+                        plugins: { 
+                            legend: { position: 'bottom', labels: { padding: 20, font:{family:'Prompt'} } },
+                            datalabels: { anchor: 'end', align: 'top', offset: 4 }
+                        } 
+                    }
+                });
+            }
+        }
+
+        function renderTop5List(itemsObj, totalPeople) {
+            let arr = Object.keys(itemsObj).map(key => [key, itemsObj[key]]).sort((a,b) => b[1] - a[1]).slice(0, 5);
+            let html = '';
+            arr.forEach((item, index) => {
+                let count = item[1]; let pct = totalPeople > 0 ? ((count/totalPeople)*100).toFixed(1) : 0;
+                html += `<tr><td><span class="rank-num">#${index+1}</span></td><td><div>${item[0]}</div><div class="progress-bg"><div class="progress-fill" style="width:${pct>100?100:pct}%"></div></div></td><td style="text-align:right;"><b>${count}</b> <span style="font-size:0.8rem; color:#888;">(${pct}%)</span></td></tr>`;
+            });
+            document.getElementById('topProductTable').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">ไม่มีข้อมูล</td></tr>';
+        }
+
+        // ==========================================
+        // 📤 EXPORT IMAGE (UPDATED: Fix Scale & Shadow)
+        // ==========================================
+        async function exportImage() {
+            Swal.fire({ title: 'กำลังสร้างไฟล์ภาพ...', text: 'กำลังจัดรูปแบบ Report (Fixed Width)...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            const element = document.getElementById('pdfContent');
+            
+            try {
+                // เทคนิค: ใช้ windowWidth เพื่อบังคับ html2canvas เรนเดอร์เหมือนเปิดในจอใหญ่
+                // และกำหนด width ของ container ให้พอดี เพื่อไม่ให้ภาพยืดหรือหดผิดสัดส่วน
+                const EXPORT_WIDTH = 1000;
+
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    logging: false, 
+                    windowWidth: 1440, // จำลองจอ Desktop
+                    onclone: (clonedDoc) => {
+                        const clonedBody = clonedDoc.body;
+                        const clonedContainer = clonedDoc.getElementById('pdfContent');
+
+                        // จัด Container
+                        clonedContainer.style.width = `${EXPORT_WIDTH}px`;
+                        clonedContainer.style.height = 'auto'; // ปล่อยให้สูงตามเนื้อหาจริง
+                        clonedContainer.style.margin = '0 auto';
+                        clonedContainer.style.padding = '40px';
+                        clonedContainer.style.backgroundColor = '#fdfdfd';
+                        
+                        // 1. Force Shadow & Border on Stat Cards (ตามที่ขอ)
+                        const statCards = clonedContainer.querySelectorAll('.stat-card');
+                        statCards.forEach(card => {
+                            card.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1) !important';
+                            card.style.border = '1px solid #ddd !important';
+                        });
+
+                        // 2. Adjust Grid Layout
+                        const statGrid = clonedContainer.querySelector('.stat-grid');
+                        if(statGrid) {
+                            statGrid.style.display = 'grid';
+                            statGrid.style.gridTemplateColumns = '1fr 1fr';
+                            statGrid.style.gap = '30px';
+                        }
+
+                        // 3. Adjust Flex Row
+                        const flexRow = clonedContainer.querySelector('.dashboard-flex');
+                        if(flexRow) {
+                            flexRow.style.display = 'flex';
+                            flexRow.style.flexDirection = 'row';
+                            flexRow.style.justifyContent = 'space-between';
+                            flexRow.style.gap = '20px';
+                        }
+                        
+                        // 4. Force Shadow on Chart Boxes
+                        const allChartBoxes = clonedContainer.querySelectorAll('.chart-box');
+                        allChartBoxes.forEach(box => {
+                            box.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15) !important';
+                            box.style.marginBottom = '30px';
+                            box.style.width = '100%'; 
+                            
+                            if (box.parentElement.classList.contains('dashboard-flex')) {
+                                box.style.flex = '1';
+                                box.style.minWidth = '0';
+                            }
+                        });
+
+                        // Clean Body Styles
+                        clonedBody.style.margin = '0';
+                        clonedBody.style.background = '#eee';
+                        // เอา width fix ออกจาก body เพื่อให้ layout ไหลตาม container
+                    }
+                });
+                
+                const imgData = canvas.toDataURL('image/jpeg', 0.9);
+                const link = document.createElement('a');
+                link.download = `BlendSignature_Report_${new Date().toISOString().slice(0,10)}.jpg`;
+                link.href = imgData;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                Swal.close(); Swal.fire({ icon:'success', title:'ดาวน์โหลดเรียบร้อย', confirmButtonColor:'#D4AF37' });
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Error', 'ไม่สามารถบันทึกภาพได้', 'error');
+            }
+        }
+
+        function setupScrollReveal() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        }
+    </script>
+</body>
+</html>
