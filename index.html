@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Blend Signature Sensory Test</title>
+    <title>BLEND285 Sensory Test</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless/borderless.css" rel="stylesheet">
@@ -56,13 +56,20 @@
             z-index: -1;
         }
 
-        .container { width: 100%; max-width: 900px; padding: 20px; z-index: 10; padding-bottom: 50px; }
+        /* Container หลัก */
+        .container { 
+            width: 100%; 
+            max-width: 900px; 
+            padding: 20px; 
+            z-index: 10; 
+            padding-bottom: 50px; 
+        }
 
         .glass-card {
             background: var(--glass-bg); 
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             border-radius: 25px; 
-            padding: 40px 30px; 
+            padding: 40px 30px; /* Desktop Padding */
             box-shadow: var(--shadow); 
             border: 1px solid var(--glass-border);
             position: relative; overflow: visible; 
@@ -235,7 +242,7 @@
     <div class="container" id="mainContainer">
         
         <div id="loginSection" class="glass-card float-anim" style="margin-top: 10vh; max-width: 500px; margin-left: auto; margin-right: auto;">
-            <div class="logo-text">BLEND285 SIGNATURE</div>
+            <div class="logo-text">BLEND285</div>
             <p class="sub-logo">ระบบบันทึกผลการทดสอบสุรา (Sensory Test)</p>
             
             <input type="tel" id="passcode" class="passcode-input" placeholder="••••" maxlength="4">
@@ -318,25 +325,25 @@
                     <div class="q6-row-card">
                         <div class="q6-header">🥇 ชอบมากที่สุด</div>
                         <div class="q6-options">
-                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="512" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">512</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="524" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">524</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r1" value="536" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">536</div></div></label>
                         </div>
                     </div>
                     <div class="q6-row-card">
                         <div class="q6-header">🥈 ชอบปานกลาง</div>
                         <div class="q6-options">
-                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="512" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">512</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="524" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">524</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r2" value="536" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">536</div></div></label>
                         </div>
                     </div>
                     <div class="q6-row-card">
                         <div class="q6-header">🥉 ชอบน้อยที่สุด</div>
                         <div class="q6-options">
-                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="556" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">556</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="568" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">568</div></div></label>
-                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="579" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">579</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="512" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">512</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="524" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">524</div></div></label>
+                            <label class="q6-btn-label"><input type="radio" name="q6_r3" value="536" onchange="checkGrid(this)"><div class="q6-btn-box"><div class="q6-btn-num">536</div></div></label>
                         </div>
                     </div>
                 </div>
@@ -346,9 +353,9 @@
                 <div class="form-header"><span class="q-badge">7</span> ความใกล้เคียงของรสชาติ <span style="color:red">*</span></div>
                 <select id="q7">
                     <option value="" disabled selected>กรุณาเลือก...</option>
-                    <option value="556-568">556-568</option>
-                    <option value="556-579">556-579</option>
-                    <option value="568-579">568-579</option>
+                    <option value="512-524">512-524</option>
+                    <option value="512-536">512-536</option>
+                    <option value="524-536">524-536</option>
                     <option value="ใกล้เคียงกันทั้งหมด">ใกล้เคียงกันทั้งหมด</option>
                 </select>
             </div>
@@ -365,12 +372,7 @@
             <div class="header-row">
                 <div>
                     <h2 style="color:#B8860B; margin:0; font-size:1.8rem;">สรุปผลการทดสอบ</h2>
-                    <p style="color:#888; font-size:0.9rem;">
-                        Real-time Data Dashboard
-                        <span id="lastUpdateBadge" style="font-size:0.8rem; background:#eee; padding:2px 8px; border-radius:10px; margin-left:10px; opacity:0; transition:0.5s;">
-                            🕐 กำลังโหลด...
-                        </span>
-                    </p>
+                    <p style="color:#888; font-size:0.9rem;">Real-time Data Dashboard</p>
                 </div>
                 <button class="btn-share" onclick="exportImage()">
                     📥 Download Report
@@ -461,31 +463,11 @@
         let rawDashboardData = [];
         let activeFilters = {}; 
         let chartInstances = {};
-        
-        // --- NEW: Global variable for polling timer ---
-        let refreshTimer = null;
 
         Chart.register(ChartDataLabels);
         Chart.defaults.font.family = "'Prompt', sans-serif";
         Chart.defaults.set('plugins.datalabels', {
-            color: '#333', 
-            anchor: 'end', 
-            align: 'top', 
-            font: { weight: 'bold', size: 11, family: 'Prompt' },
-            backgroundColor: 'rgba(255,255,255,0.85)',
-            borderColor: (ctx) => {
-                const bg = ctx.dataset.backgroundColor;
-                if (Array.isArray(bg)) return bg[ctx.dataIndex]; 
-                
-                const label = ctx.dataset.label || '';
-                if (label.includes('556')) return '#D4AF37'; 
-                if (label.includes('568')) return '#F0E68C'; 
-                if (label.includes('579')) return '#8a6d3b'; 
-                return bg; 
-            },
-            borderWidth: 1.5,
-            borderRadius: 6,
-            padding: 6,
+            color: '#333', anchor: 'end', align: 'top', font: { weight: 'bold', size: 11, family: 'Prompt' },
             formatter: (value, ctx) => {
                 if (ctx.chart.config.type === 'bar') return value;
                 let sum = ctx.dataset.data.reduce((a, b) => a + b, 0);
@@ -506,12 +488,11 @@
                 }
             }
 
-            if(code === '0901') {
+            if(code === '2711') {
                 switchSection('surveyForm');
             } else if(code === '2222') {
                 switchSection('dashboardSection');
-                // --- MODIFIED: Start Auto Refresh instead of single load ---
-                startAutoRefresh();
+                loadDashboardData();
             } else {
                 Swal.fire('รหัสผ่านผิด', 'กรุณาลองใหม่', 'error');
             }
@@ -618,64 +599,17 @@
 
         function highlight(id) { document.getElementById(id).classList.add('error-highlight'); }
 
-        // --- NEW: Function to handle Auto Refresh Logic ---
-        function startAutoRefresh() {
-            // First load with normal loading screen
-            loadDashboardData(false);
-
-            // Clear existing timer if any
-            if (refreshTimer) clearInterval(refreshTimer);
-
-            // Set interval to refresh every 30 seconds
-            refreshTimer = setInterval(() => {
-                loadDashboardData(true);
-            }, 30000); 
-        }
-
-        // --- MODIFIED: loadDashboardData accepts isBackground param ---
-        function loadDashboardData(isBackground = false) {
-            const badge = document.getElementById('lastUpdateBadge');
-
-            if (!isBackground) {
-                Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>{Swal.showLoading()}});
-            } else {
-                // Background update: Show spinning/loading text in badge
-                if(badge) {
-                    badge.style.opacity = '1';
-                    badge.innerHTML = '🔄 กำลังซิงค์ข้อมูล...';
-                    badge.style.color = '#B8860B';
-                }
-            }
-
-            // Append timestamp (&t=...) to avoid browser caching
+        function loadDashboardData() {
+            Swal.fire({title:'กำลังประมวลผล...', didOpen:()=>{Swal.showLoading()}});
             Papa.parse(PROXY_URL + '&t=' + new Date().getTime(), {
                 download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
-                    if (!isBackground) Swal.close();
-                    
-                    if(!results.data || results.data.length === 0) { 
-                        if(!isBackground) Swal.fire('Info', 'ไม่พบข้อมูล', 'info'); 
-                        return; 
-                    }
-                    
+                    Swal.close();
+                    if(!results.data || results.data.length === 0) { Swal.fire('Info', 'ไม่พบข้อมูล', 'info'); return; }
                     rawDashboardData = results.data; 
-                    updateDashboardState();
-                    
-                    // Update the badge with current time
-                    if(badge) {
-                        const now = new Date();
-                        const timeStr = now.getHours().toString().padStart(2,'0') + ':' + 
-                                        now.getMinutes().toString().padStart(2,'0') + ':' + 
-                                        now.getSeconds().toString().padStart(2,'0');
-                        badge.style.opacity = '1';
-                        badge.innerHTML = '✅ อัปเดตล่าสุด: ' + timeStr;
-                        badge.style.color = 'green';
-                    }
+                    updateDashboardState(); 
                 },
-                error: err => {
-                    // Only alert error if it's the main initial load
-                    if (!isBackground) Swal.fire('Error', 'ดึงข้อมูลไม่ได้ (CORS)', 'error');
-                }
+                error: err => Swal.fire('Error', 'ดึงข้อมูลไม่ได้ (CORS)', 'error')
             });
         }
 
@@ -690,7 +624,7 @@
                 return true;
             });
 
-            let counts = { total: filteredData.length, blendDrinker: 0, q1: {}, q2: {}, q3: {}, q4_items: {}, q5: {}, q7: {}, q6: {'556':[0,0,0],'568':[0,0,0],'579':[0,0,0]}, q6_filtered: {'556':[0,0,0],'568':[0,0,0],'579':[0,0,0]} };
+            let counts = { total: filteredData.length, blendDrinker: 0, q1: {}, q2: {}, q3: {}, q4_items: {}, q5: {}, q7: {}, q6: {'512':[0,0,0],'524':[0,0,0],'536':[0,0,0]}, q6_filtered: {'512':[0,0,0],'524':[0,0,0],'536':[0,0,0]} };
 
             filteredData.forEach(row => {
                 let isBlend285 = false;
@@ -789,9 +723,9 @@
             const ctx = document.getElementById(id).getContext('2d');
             const grad1 = createGoldGradient(ctx,'warm'); const grad2 = createGoldGradient(ctx,'light'); const grad3 = createGoldGradient(ctx,'dark');
             const datasets = [
-                { label: '556 (ทองอุ่น)', data: dataObj['556'], backgroundColor: grad1, stack: 'stack0' },
-                { label: '568 (ทองสว่าง)', data: dataObj['568'], backgroundColor: grad2, stack: 'stack1' },
-                { label: '579 (ทองเข้ม)', data: dataObj['579'], backgroundColor: grad3, stack: 'stack2' }
+                { label: '512 (ทองอุ่น)', data: dataObj['512'], backgroundColor: grad1, stack: 'stack0' },
+                { label: '524 (ทองสว่าง)', data: dataObj['524'], backgroundColor: grad2, stack: 'stack1' },
+                { label: '536 (ทองเข้ม)', data: dataObj['536'], backgroundColor: grad3, stack: 'stack2' }
             ];
 
             if (chartInstances[id]) {
@@ -827,34 +761,42 @@
             document.getElementById('topProductTable').innerHTML = html || '<tr><td colspan="3" style="text-align:center;">ไม่มีข้อมูล</td></tr>';
         }
 
+        // ==========================================
+        // 📤 EXPORT IMAGE (UPDATED: Fix Scale & Shadow)
+        // ==========================================
         async function exportImage() {
             Swal.fire({ title: 'กำลังสร้างไฟล์ภาพ...', text: 'กำลังจัดรูปแบบ Report (Fixed Width)...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             const element = document.getElementById('pdfContent');
             
             try {
+                // เทคนิค: ใช้ windowWidth เพื่อบังคับ html2canvas เรนเดอร์เหมือนเปิดในจอใหญ่
+                // และกำหนด width ของ container ให้พอดี เพื่อไม่ให้ภาพยืดหรือหดผิดสัดส่วน
                 const EXPORT_WIDTH = 1000;
 
                 const canvas = await html2canvas(element, { 
                     scale: 2, 
                     useCORS: true, 
                     logging: false, 
-                    windowWidth: 1440, 
+                    windowWidth: 1440, // จำลองจอ Desktop
                     onclone: (clonedDoc) => {
                         const clonedBody = clonedDoc.body;
                         const clonedContainer = clonedDoc.getElementById('pdfContent');
 
+                        // จัด Container
                         clonedContainer.style.width = `${EXPORT_WIDTH}px`;
-                        clonedContainer.style.height = 'auto'; 
+                        clonedContainer.style.height = 'auto'; // ปล่อยให้สูงตามเนื้อหาจริง
                         clonedContainer.style.margin = '0 auto';
                         clonedContainer.style.padding = '40px';
                         clonedContainer.style.backgroundColor = '#fdfdfd';
                         
+                        // 1. Force Shadow & Border on Stat Cards (ตามที่ขอ)
                         const statCards = clonedContainer.querySelectorAll('.stat-card');
                         statCards.forEach(card => {
                             card.style.boxShadow = '0 10px 25px rgba(0,0,0,0.1) !important';
                             card.style.border = '1px solid #ddd !important';
                         });
 
+                        // 2. Adjust Grid Layout
                         const statGrid = clonedContainer.querySelector('.stat-grid');
                         if(statGrid) {
                             statGrid.style.display = 'grid';
@@ -862,6 +804,7 @@
                             statGrid.style.gap = '30px';
                         }
 
+                        // 3. Adjust Flex Row
                         const flexRow = clonedContainer.querySelector('.dashboard-flex');
                         if(flexRow) {
                             flexRow.style.display = 'flex';
@@ -870,6 +813,7 @@
                             flexRow.style.gap = '20px';
                         }
                         
+                        // 4. Force Shadow on Chart Boxes
                         const allChartBoxes = clonedContainer.querySelectorAll('.chart-box');
                         allChartBoxes.forEach(box => {
                             box.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15) !important';
@@ -882,8 +826,10 @@
                             }
                         });
 
+                        // Clean Body Styles
                         clonedBody.style.margin = '0';
                         clonedBody.style.background = '#eee';
+                        // เอา width fix ออกจาก body เพื่อให้ layout ไหลตาม container
                     }
                 });
                 
