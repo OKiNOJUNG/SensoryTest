@@ -698,6 +698,16 @@
             vertical-align: middle;
         }
 
+        .respondent-data-table th:nth-child(12),
+        .respondent-data-table td:nth-child(12),
+        .a4-report-table th:nth-child(12),
+        .a4-report-table td:nth-child(12) {
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            word-break: break-word !important;
+            white-space: pre-wrap !important;
+        }
+
         .respondent-data-table tbody tr:nth-child(even) {
             background-color: #fcfbf7;
         }
@@ -1041,7 +1051,13 @@
                 font-size: 9.5pt !important;
             }
 
-            .respondent-data-table tr {
+            .respondent-data-table thead,
+            .a4-report-table thead {
+                display: table-header-group !important;
+            }
+
+            .respondent-data-table tr,
+            .a4-report-table tr {
                 page-break-inside: avoid;
                 break-inside: avoid;
             }
@@ -1420,14 +1436,15 @@
     <div id="a4ExportStage" aria-hidden="true"></div>
 
     <script>
-        const FORM_URL = 'about:invalid#zPythonSafez';
+        const FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSd9sily5JtIV4D0zU61Xn4N8vUXjAlPqbXFrvUmUko9trbHqg/formResponse';
         const FORM_RESPONSES_GID = '1389812007';
-        const RAW_CSV_URL = 'about:invalid#zPythonSafez' + FORM_RESPONSES_GID + '&single=true&output=csv';
+        const RAW_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSUuuyrXLfw5tA6k6EDMZTmkOJNlkyidTcegYlqz9zJ2Ct-xyqu75C_95ZNW9kuyOeZwkWd1542OaYa/pub?gid=' + FORM_RESPONSES_GID + '&single=true&output=csv';
 
         const CACHE_CSV_KEY = 'sensory_cached_csv';
         const PENDING_ROWS_KEY = 'sensory_pending_rows';
         const ACTIVE_SESSION_KEY = 'sensory_active_session_code';
         const FORM_DRAFT_KEY = 'sensory_form_draft_v1';
+        const DEVICE_SUBMITTED_KEY = 'sensory_device_submitted_v1';
         const PENDING_TTL_MS = 10 * 60 * 1000;
         const AUTO_REFRESH_INTERVAL_MS = 5000; // ตรวจสอบข้อมูลใหม่อัตโนมัติทุก 5 วินาที
 
@@ -1445,6 +1462,7 @@
         let dashboardRefreshTimer = null;
         let isDashboardLoading = false;
         let lastDataSignature = '';
+        let isSubmittingForm = false;
 
         // BroadcastChannel สำหรับแจ้งเตือนข้ามแท็บทันทีเมื่อมีการส่งฟอร์มใหม่
         let sensoryChannel = null;
@@ -1508,9 +1526,37 @@
             try { sessionStorage.removeItem(ACTIVE_SESSION_KEY); } catch (e) { }
         }
 
+        function hasDeviceSubmitted() {
+            try {
+                if (localStorage.getItem(DEVICE_SUBMITTED_KEY) === 'true' || sessionStorage.getItem(DEVICE_SUBMITTED_KEY) === 'true') {
+                    return true;
+                }
+                if (document.cookie && document.cookie.split(';').some(c => c.trim().startsWith(DEVICE_SUBMITTED_KEY + '=true'))) {
+                    return true;
+                }
+            } catch (e) { }
+            return false;
+        }
+
+        function markDeviceSubmitted() {
+            try { localStorage.setItem(DEVICE_SUBMITTED_KEY, 'true'); } catch (e) { }
+            try { sessionStorage.setItem(DEVICE_SUBMITTED_KEY, 'true'); } catch (e) { }
+            try { document.cookie = `${DEVICE_SUBMITTED_KEY}=true; max-age=31536000; path=/; SameSite=Lax`; } catch (e) { }
+        }
+
         function checkLogin() {
             const code = document.getElementById('passcode').value.trim();
             if (code === '2711') {
+                if (hasDeviceSubmitted()) {
+                    document.getElementById('passcode').value = '';
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'เครื่องนี้ได้ทำแบบสอบถามไปแล้ว',
+                        text: 'ไม่สามารถทำแบบทดสอบซ้ำในเครื่องเดิมได้',
+                        confirmButtonColor: '#D4AF37'
+                    });
+                    return;
+                }
                 saveSession('2711');
                 openSurveyView();
             } else if (code === '2222') {
@@ -1522,6 +1568,16 @@
         }
 
         function openSurveyView() {
+            if (hasDeviceSubmitted()) {
+                goHome();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'เครื่องนี้ได้ทำแบบสอบถามไปแล้ว',
+                    text: 'ไม่สามารถทำแบบทดสอบซ้ำในเครื่องเดิมได้',
+                    confirmButtonColor: '#D4AF37'
+                });
+                return;
+            }
             stopDashboardAutoRefresh();
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('dashboardSection').classList.add('hidden');
@@ -1691,6 +1747,17 @@
         }
 
         function submitForm() {
+            if (isSubmittingForm) return;
+            if (hasDeviceSubmitted()) {
+                goHome();
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'เครื่องนี้ได้ทำแบบสอบถามไปแล้ว',
+                    text: 'ไม่สามารถทำแบบทดสอบซ้ำในเครื่องเดิมได้',
+                    confirmButtonColor: '#D4AF37'
+                });
+                return;
+            }
             document.querySelectorAll('.error-highlight').forEach(el => el.classList.remove('error-highlight'));
 
             let missing = [];
@@ -1731,6 +1798,9 @@
                 showCancelButton: true, confirmButtonColor: '#D4AF37', confirmButtonText: 'ยืนยัน'
             }).then((res) => {
                 if (res.isConfirmed) {
+                    if (isSubmittingForm) return;
+                    isSubmittingForm = true;
+
                     const q1Val = document.querySelector('input[name="q1"]:checked').value;
                     const q2Val = document.querySelector('input[name="q2"]:checked').value;
                     const q3Val = document.getElementById('q3').value;
@@ -1775,21 +1845,32 @@
                         '_localTs': Date.now()
                     };
 
-                    Swal.fire({ title: 'กำลังบันทึก...', didOpen: () => { Swal.showLoading() } });
+                    Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => { Swal.showLoading() } });
 
                     fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: fd })
                         .then(() => {
                             try { localStorage.setItem('submission_timestamp', Date.now().toString()); } catch (e) { }
+                            markDeviceSubmitted();
                             savePendingRow(pendingRow);
                             if (sensoryChannel) {
                                 try { sensoryChannel.postMessage({ type: 'NEW_SUBMISSION', ts: Date.now() }); } catch (e) { }
                             }
+                            // ล้างข้อมูลฟอร์มและออกจากระบบกลับไปหน้าล็อกอินทันที เพื่อป้องกันการทำแบบทดสอบซ้ำ
                             resetSurveyFormUI();
-                            Swal.fire('สำเร็จ', 'ขอบคุณที่ร่วมทดสอบ', 'success').then(() => {
-                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                            goHome();
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'สำเร็จ',
+                                text: 'ขอบคุณที่ร่วมทดสอบ ระบบได้กลับสู่หน้าเข้าสู่ระบบเรียบร้อยแล้ว',
+                                confirmButtonColor: '#D4AF37'
                             });
                         })
-                        .catch((err) => { Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error'); });
+                        .catch((err) => {
+                            Swal.fire('Error', 'เกิดข้อผิดพลาดในการเชื่อมต่อ', 'error');
+                        })
+                        .finally(() => {
+                            isSubmittingForm = false;
+                        });
                 }
             });
         }
@@ -1902,22 +1983,6 @@
             }
         }
 
-        function decodeAllOriginsContents(contents) {
-            if (!contents || typeof contents !== 'string') return '';
-            const base64Marker = 'base64,';
-            const idx = contents.indexOf(base64Marker);
-            if (contents.startsWith('data:') && idx !== -1) {
-                const b64 = contents.slice(idx + base64Marker.length);
-                const binary = atob(b64);
-                const bytes = new Uint8Array(binary.length);
-                for (let i = 0; i < binary.length; i++) {
-                    bytes[i] = binary.charCodeAt(i);
-                }
-                return new TextDecoder('utf-8').decode(bytes);
-            }
-            return contents;
-        }
-
         function isValidCsvText(text) {
             const trimmed = (text || '').trim();
             return trimmed.length > 0 && !trimmed.startsWith('<');
@@ -1932,22 +1997,6 @@
                     if (isValidCsvText(text)) return text;
                 }
             } catch (e) { }
-
-            const encodedBust = encodeURIComponent(bustUrl);
-            const fallbackUrls = [
-                'about:invalid#zPythonSafez' + encodedBust,
-                'about:invalid#zPythonSafez' + encodedBust
-            ];
-
-            for (const proxyUrl of fallbackUrls) {
-                try {
-                    const resp = await fetchWithTimeout(proxyUrl, { cache: 'no-store' }, 15000);
-                    if (!resp.ok) continue;
-                    const payload = await resp.json();
-                    const text = decodeAllOriginsContents(payload && payload.contents);
-                    if (isValidCsvText(text)) return text;
-                } catch (e) { }
-            }
 
             throw new Error('Unable to fetch Google Sheet CSV');
         }
